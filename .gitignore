@@ -1,0 +1,6 @@
+.godot/
+/export/
+/build/
+*.exe
+*.zip
+*.tmp
