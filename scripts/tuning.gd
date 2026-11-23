@@ -24,6 +24,9 @@ const PARAMS := {
 	"plunger_charge_time": [0.9, 0.2, 3.0, 0.05, "Lanzador: tiempo de carga (s)"],
 	"nudge_force": [140.0, 0.0, 600.0, 5.0, "Sacudón: fuerza"],
 	"max_ball_speed": [2600.0, 800.0, 5000.0, 50.0, "Velocidad máxima de la bola"],
+	"sfx_volume": [0.8, 0.0, 1.0, 0.05, "Volumen de efectos"],
+	"vibration": [1.0, 0.0, 1.0, 0.05, "Vibración del joystick"],
+	"hitstop_ms": [35.0, 0.0, 150.0, 5.0, "Congelamiento en impactos (ms)"],
 }
 
 var values := {}

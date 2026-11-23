@@ -5,6 +5,8 @@ extends AnimatableBody2D
 ## Godot calcula la velocidad del cuerpo cinemático a partir de su giro,
 ## y con eso le transmite el golpe a la bola.
 
+signal swung(up: bool)
+
 const LENGTH := 62.0
 const BASE_RADIUS := 10.0
 const TIP_RADIUS := 5.0
@@ -18,6 +20,7 @@ var active_angle := 0.0
 
 var _material := PhysicsMaterial.new()
 var _outline := PackedVector2Array()
+var _was_up := false
 
 
 func setup(left: bool) -> void:
@@ -51,8 +54,16 @@ func is_up() -> bool:
 	return enabled and Input.is_action_pressed(action)
 
 
+## True mientras el flipper está subiendo (golpeando).
+func is_swinging_up() -> bool:
+	return is_up() and not is_equal_approx(rotation, active_angle)
+
+
 func _physics_process(delta: float) -> void:
 	var pressed := is_up()
+	if pressed != _was_up:
+		_was_up = pressed
+		swung.emit(pressed)
 	var target := active_angle if pressed else rest_angle
 	var speed := Tuning.v("flipper_up_speed") if pressed else Tuning.v("flipper_down_speed")
 	rotation = move_toward(rotation, target, speed * delta)

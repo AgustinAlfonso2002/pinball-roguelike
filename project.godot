@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 
 Tuning="*res://scripts/tuning.gd"
 GameInput="*res://scripts/game_input.gd"
+Sfx="*res://scripts/sfx.gd"
 
 [display]
 

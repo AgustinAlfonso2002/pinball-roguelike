@@ -32,6 +32,22 @@ Todos los valores de física se cambian en vivo con los sliders, mientras jugás
 
 Para probar el tacto de los flippers rápido, usá **B** (suelta una bola en el centro) y **T** (cámara lenta).
 
+El panel también controla el **volumen de los efectos**, la **intensidad de la vibración** del joystick y el **congelamiento en los impactos** (0 lo desactiva).
+
+## La mesa
+
+- **Bumpers** (100 puntos) y **slingshots** (10 puntos).
+- **Banco de 3 dianas** arriba (250 cada una). Tirar las tres da **2000 de bonus** y vuelven a subir.
+- **Inlanes y outlanes**: a cada lado, un poste separa el carril que lleva al flipper (inlane) del que se lleva la bola (outlane). Ahí es donde el sacudón salva bolas.
+- **Deflectores laterales** que despegan la bola de la pared para que no baje directo al outlane.
+
+## Juice
+
+- Sonidos retro provisorios en `assets/sfx/`, generados con `python tools/gen_sfx.py`. Se reemplazan por los definitivos sin tocar el código, manteniendo los nombres.
+- Vibración del joystick en flippers, golpes, lanzamiento, sacudón, tilt y bola perdida.
+- Puntos flotantes en cada impacto.
+- Congelamiento breve (hitstop) en los golpes fuertes.
+
 ## Estructura
 
 ```
@@ -46,12 +62,18 @@ scripts/tuning_panel.gd Panel de sliders
 scripts/game_input.gd   Acciones de teclado y joystick (autoload "GameInput")
 scripts/hud.gd          Puntaje, mensajes y ayuda
 scripts/shapes.gd       Utilidad para formas de colisión
+scripts/post.gd         Postes de goma (separan inlane y outlane)
+scripts/drop_target.gd  Dianas abatibles
+scripts/floating_text.gd Puntos flotantes
+scripts/sfx.gd          Efectos de sonido (autoload "Sfx")
+assets/sfx/             Sonidos .wav
+tools/gen_sfx.py        Generador de los sonidos provisorios
 tests/self_test.gd      Autoprueba de física sin ventana
 ```
 
 ## Autoprueba de física
 
-Mide los golpes de los flippers, los bumpers, los slingshots y el lanzador, dispara la bola a máxima velocidad en 60 direcciones para verificar que no atraviese paredes, y juega 40 segundos al azar:
+Mide los golpes de los flippers, los bumpers, los slingshots y el lanzador; dispara la bola a máxima velocidad en 60 direcciones para verificar que no atraviese paredes; prueba outlanes, inlanes, deflectores y el banco de dianas; y juega 40 segundos al azar:
 
 ```
 godot --headless --path . --fixed-fps 60 -- --selftest
@@ -66,6 +88,7 @@ godot --headless --path . --fixed-fps 60 -- --selftest
 
 ## Pendientes conocidos
 
-- El arco superior siempre manda la bola por el lado izquierdo; más adelante conviene sumar un deflector o una compuerta.
+- El arco superior siempre manda la bola por el lado izquierdo (ahora el deflector la despega de la pared).
+- Falta una rampa: en 2D necesita capas de colisión que cambian, y conviene hacerla junto con el arte.
 - Si la bola vuelve a caer por el carril del lanzador, se relanza (no hay compuerta de un solo sentido).
 - La resolución de pixel art y el arte definitivo se deciden en la fase siguiente.

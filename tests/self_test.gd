@@ -11,6 +11,7 @@ var _failed := 0
 
 func _ready() -> void:
 	main.infinite_balls = true
+	main.juice_enabled = false
 	_run.call_deferred()
 
 
@@ -35,6 +36,10 @@ func _run() -> void:
 	await _test_sling()
 	await _test_tunneling()
 	await _test_rest_on_flipper()
+	await _test_outlanes()
+	await _test_deflectors()
+	await _test_target_bank()
+	await _test_launch_survives()
 	await _test_random_play()
 	print("RESULTADO: %d fallas" % _failed)
 	get_tree().quit(1 if _failed > 0 else 0)
@@ -129,7 +134,7 @@ func _test_tunneling() -> void:
 	for t in trials:
 		main.new_game()
 		var dir := Vector2.from_angle(rng.randf_range(0.0, TAU))
-		var start := Vector2(rng.randf_range(60.0, 300.0), rng.randf_range(60.0, 420.0))
+		var start := _free_spot(rng)
 		main.spawn_ball(start, dir * Tuning.v("max_ball_speed"))
 		for i in int(0.6 * 240):
 			await get_tree().physics_frame
@@ -205,3 +210,111 @@ func _test_respawn() -> void:
 		if main.ball_in_lane() and main.ball.linear_velocity.length() < 30.0:
 			ok_count += 1
 	_check("La bola reaparece quieta en el carril del lanzador", ok_count == 4, "%d de 4" % ok_count)
+
+
+## Busca un punto al azar en la mesa donde la bola no se superponga con nada.
+func _free_spot(rng: RandomNumberGenerator) -> Vector2:
+	var space := main.get_world_2d().direct_space_state
+	var shape := CircleShape2D.new()
+	shape.radius = Ball.RADIUS + 2.0
+	var q := PhysicsShapeQueryParameters2D.new()
+	q.shape = shape
+	q.exclude = [main.ball.get_rid()]
+	while true:
+		var p := Vector2(rng.randf_range(60.0, 300.0), rng.randf_range(60.0, 420.0))
+		q.transform = Transform2D(0.0, p)
+		if space.intersect_shape(q, 1).is_empty():
+			return p
+	return Vector2.ZERO
+
+
+func _test_outlanes() -> void:
+	# Una bola que cae por el outlane se pierde; una que cae por el inlane llega al flipper.
+	var results := []
+	for x in [10.0, main.LANE_X - 10.0]:
+		main.new_game()
+		await _frames(5)
+		var balls_before: int = main.balls_left
+		main.infinite_balls = false
+		main.spawn_ball(Vector2(x, 400.0), Vector2(0, 100))
+		var lost := false
+		for i in int(1.5 * 240):
+			await get_tree().physics_frame
+			if main.balls_left < balls_before:
+				lost = true
+				break
+		main.infinite_balls = true
+		results.append(lost)
+	_check("Las bolas que caen por los outlanes se pierden", results == [true, true], str(results))
+
+	var reached := []
+	for left in [true, false]:
+		main.new_game()
+		await _frames(5)
+		var x: float = 37.0 if left else main.LANE_X - 37.0
+		main.spawn_ball(Vector2(x, 420.0), Vector2(0, 100))
+		var f: Flipper = main.flippers[0] if left else main.flippers[1]
+		var closest := 9999.0
+		for i in int(1.2 * 240):
+			await get_tree().physics_frame
+			closest = minf(closest, main.ball.global_position.distance_to(f.global_position))
+		reached.append(closest < 30.0)
+	_check("Las bolas que caen por los inlanes llegan al flipper", reached == [true, true], str(reached))
+
+
+func _test_deflectors() -> void:
+	# Una bola que baja pegada a la pared lateral sale despedida hacia el centro.
+	var ok := []
+	for left in [true, false]:
+		main.new_game()
+		await _frames(5)
+		var x: float = 9.0 if left else main.LANE_X - 12.0
+		main.spawn_ball(Vector2(x, 150.0), Vector2(0, 300))
+		var max_inward := 0.0
+		for i in int(0.8 * 240):
+			await get_tree().physics_frame
+			var d: float = main.ball.global_position.x if left else main.LANE_X - main.ball.global_position.x
+			max_inward = maxf(max_inward, d)
+		ok.append(max_inward > 50.0)
+	_check("Los deflectores laterales despegan la bola de la pared", ok == [true, true], str(ok))
+
+
+func _test_target_bank() -> void:
+	main.new_game()
+	await _frames(5)
+	var before: int = main.score
+	for t in main.targets:
+		main.spawn_ball(t.global_position + Vector2(0, 40), Vector2(0, -700))
+		await _frames(int(0.25 * 240))
+	var all_down := true
+	for t in main.targets:
+		all_down = all_down and t.is_down
+	var gained: int = main.score - before
+	_check("El banco de dianas se completa y da el bonus", all_down and gained >= 3 * DropTarget.POINTS + main.BANK_BONUS,
+			"puntos +%d" % gained)
+	main.spawn_ball(main.BALL_SPAWN)
+	await _frames(int(2.0 * 240))
+	var all_up := true
+	for t in main.targets:
+		all_up = all_up and not t.is_down
+	_check("Las dianas vuelven a subir después del bonus", all_up, "")
+
+
+func _test_launch_survives() -> void:
+	# Lanzamientos con distinta fuerza: la bola debería entrar al juego y no
+	# irse directo por un outlane en los primeros 3 segundos.
+	var survived := 0
+	var holds := [0.6, 0.75, 0.9, 1.0, 1.2]
+	for hold in holds:
+		main.new_game()
+		await _frames(20)
+		main.infinite_balls = false
+		var balls_before: int = main.balls_left
+		Input.action_press("launch")
+		await _frames(int(hold * 240))
+		Input.action_release("launch")
+		await _frames(int(3.0 * 240))
+		if main.balls_left == balls_before:
+			survived += 1
+		main.infinite_balls = true
+	_check("Los lanzamientos no se van directo al drenaje", survived >= 4, "%d de %d sobreviven 3 s" % [survived, holds.size()])
