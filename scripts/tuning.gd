@@ -7,23 +7,24 @@ extends Node
 
 signal changed
 
-const SAVE_PATH := "user://tuning.cfg"
+const SAVE_PATH := "user://tuning_v2.cfg"  # v2: valores para la mesa a escala 0,5
 
 ## clave: [valor por defecto, mínimo, máximo, paso, etiqueta]
 const PARAMS := {
-	"gravity": [1100.0, 300.0, 3000.0, 10.0, "Gravedad de la mesa"],
+	"game_speed": [0.8, 0.3, 1.5, 0.05, "Velocidad del juego (todo más lento o más rápido)"],
+	"gravity": [550.0, 150.0, 1500.0, 5.0, "Gravedad de la mesa"],
 	"ball_bounce": [0.30, 0.0, 1.0, 0.01, "Rebote de la bola"],
 	"ball_friction": [0.15, 0.0, 1.0, 0.01, "Fricción de la bola"],
 	"wall_bounce": [0.40, 0.0, 1.0, 0.01, "Rebote de las paredes"],
 	"flipper_up_speed": [30.0, 5.0, 60.0, 0.5, "Flipper: velocidad de subida (rad/s)"],
 	"flipper_down_speed": [14.0, 2.0, 40.0, 0.5, "Flipper: velocidad de bajada (rad/s)"],
 	"flipper_bounce": [0.15, 0.0, 1.0, 0.01, "Flipper: rebote"],
-	"bumper_kick": [520.0, 0.0, 1500.0, 10.0, "Bumper: fuerza de empuje"],
-	"sling_kick": [420.0, 0.0, 1500.0, 10.0, "Slingshot: fuerza de empuje"],
-	"plunger_max": [1600.0, 300.0, 3000.0, 10.0, "Lanzador: fuerza máxima"],
+	"bumper_kick": [260.0, 0.0, 750.0, 5.0, "Bumper: fuerza de empuje"],
+	"sling_kick": [210.0, 0.0, 750.0, 5.0, "Slingshot: fuerza de empuje"],
+	"plunger_max": [800.0, 150.0, 1500.0, 5.0, "Lanzador: fuerza máxima"],
 	"plunger_charge_time": [0.9, 0.2, 3.0, 0.05, "Lanzador: tiempo de carga (s)"],
-	"nudge_force": [140.0, 0.0, 600.0, 5.0, "Sacudón: fuerza"],
-	"max_ball_speed": [2600.0, 800.0, 5000.0, 50.0, "Velocidad máxima de la bola"],
+	"nudge_force": [70.0, 0.0, 300.0, 5.0, "Sacudón: fuerza"],
+	"max_ball_speed": [1300.0, 400.0, 2500.0, 25.0, "Velocidad máxima de la bola"],
 	"sfx_volume": [0.8, 0.0, 1.0, 0.05, "Volumen de efectos"],
 	"vibration": [1.0, 0.0, 1.0, 0.05, "Vibración del joystick"],
 	"hitstop_ms": [35.0, 0.0, 150.0, 5.0, "Congelamiento en impactos (ms)"],

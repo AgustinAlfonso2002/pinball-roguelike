@@ -2,7 +2,7 @@ class_name Bumper
 extends StaticBody2D
 ## Bumper redondo: al tocarlo empuja la bola hacia afuera con fuerza fija.
 
-const RADIUS := 20.0
+const RADIUS := 20.0 * Geom.S
 const POINTS := 100
 
 var flash := 0.0
@@ -23,7 +23,7 @@ func hit(ball: Ball) -> void:
 	var n := (ball.global_position - global_position).normalized()
 	var vel := ball.linear_velocity
 	vel -= n * vel.dot(n)  # Conserva solo el componente tangencial...
-	vel += n * Tuning.v("bumper_kick")  # ...y lo despide hacia afuera.
+	vel += n * Run.stat(&"bumper_kick")  # ...y lo despide hacia afuera.
 	ball.linear_velocity = vel
 	flash = 1.0
 
@@ -39,4 +39,4 @@ func _draw() -> void:
 	var lit := Color(1.0, 0.85, 0.4)
 	draw_circle(Vector2.ZERO, RADIUS, base.lerp(lit, flash))
 	draw_circle(Vector2.ZERO, RADIUS * 0.45, Color(1.0, 0.82, 0.4).lerp(Color.WHITE, flash))
-	draw_arc(Vector2.ZERO, RADIUS, 0.0, TAU, 32, Color(0.4, 0.1, 0.15), 2.0)
+	draw_arc(Vector2.ZERO, RADIUS, 0.0, TAU, 32, Color(0.4, 0.1, 0.15), 1.0)

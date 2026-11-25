@@ -2,7 +2,7 @@ class_name Post
 extends StaticBody2D
 ## Poste de goma: separa outlane e inlane, rebota la bola.
 
-const RADIUS := 5.0
+const RADIUS := 5.0 * Geom.S
 
 var flash := 0.0
 var _material := PhysicsMaterial.new()
@@ -25,5 +25,4 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	draw_circle(Vector2.ZERO, RADIUS + 1.5, Color(0.95, 0.95, 1.0).lerp(Color(1.0, 0.85, 0.4), flash))
-	draw_circle(Vector2.ZERO, RADIUS - 1.5, Color(0.35, 0.38, 0.55))
+	draw_circle(Vector2.ZERO, RADIUS + 0.5, Color(0.95, 0.95, 1.0).lerp(Color(1.0, 0.85, 0.4), flash))

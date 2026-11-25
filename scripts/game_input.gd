@@ -7,6 +7,13 @@ extends Node
 
 
 func _ready() -> void:
+	# Menús: Godot no trae botones del joystick para aceptar / volver.
+	_action("ui_accept", [
+		_button(JOY_BUTTON_A),                   # Cruz
+	])
+	_action("ui_cancel", [
+		_button(JOY_BUTTON_B),                   # Círculo
+	])
 	_action("flipper_left", [
 		_key(KEY_Z),
 		_key(KEY_SHIFT, KEY_LOCATION_LEFT),
@@ -39,22 +46,38 @@ func _ready() -> void:
 		_button(JOY_BUTTON_DPAD_UP),
 		_axis(JOY_AXIS_RIGHT_Y, -1.0),
 	])
-	_action("restart", [
-		_key(KEY_R),
+	_action("pause", [
+		_key(KEY_ESCAPE),
+		_key(KEY_P),
 		_button(JOY_BUTTON_START),               # Options
+	])
+	_action("toggle_fullscreen", [
+		_key(KEY_F11),
+		_key_mod(KEY_ENTER, true),               # Alt + Enter
 	])
 	_action("toggle_panel", [
 		_key(KEY_TAB),
 		_key(KEY_F1),
 		_button(JOY_BUTTON_BACK),                # Share
 	])
+	_action("use_item_1", [
+		_key(KEY_E),
+		_button(JOY_BUTTON_B),                   # Círculo
+	])
+	_action("use_item_2", [
+		_key(KEY_Q),
+		_button(JOY_BUTTON_X),                   # Cuadrado
+	])
+	# Solo en builds de desarrollo (no funcionan en el juego exportado).
 	_action("debug_drop_ball", [
 		_key(KEY_B),
 		_button(JOY_BUTTON_Y),                   # Triángulo
 	])
 	_action("toggle_slowmo", [
 		_key(KEY_T),
-		_button(JOY_BUTTON_X),                   # Cuadrado
+	])
+	_action("toggle_debug", [
+		_key(KEY_F2),
 	])
 
 
@@ -69,6 +92,12 @@ func _key(keycode: Key, location: KeyLocation = KEY_LOCATION_UNSPECIFIED) -> Inp
 	var ev := InputEventKey.new()
 	ev.keycode = keycode
 	ev.location = location
+	return ev
+
+
+func _key_mod(keycode: Key, alt: bool) -> InputEventKey:
+	var ev := _key(keycode)
+	ev.alt_pressed = alt
 	return ev
 
 

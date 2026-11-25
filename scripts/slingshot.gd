@@ -30,11 +30,11 @@ func setup(a: Vector2, b: Vector2, c: Vector2, normal: Vector2) -> void:
 ## Devuelve true si la bola tocó la goma y fue pateada.
 func try_kick(ball: Ball) -> bool:
 	var closest := Geometry2D.get_closest_point_to_segment(ball.global_position, edge_a, edge_b)
-	if closest.distance_to(ball.global_position) > Ball.RADIUS + 3.0:
+	if closest.distance_to(ball.global_position) > Ball.RADIUS + 3.0 * Geom.S:
 		return false
 	var vel := ball.linear_velocity
 	vel -= kick_normal * vel.dot(kick_normal)
-	vel += kick_normal * Tuning.v("sling_kick")
+	vel += kick_normal * Run.stat(&"sling_kick")
 	ball.linear_velocity = vel
 	flash = 1.0
 	return true
@@ -49,4 +49,4 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	draw_colored_polygon(_points, Color(0.25, 0.27, 0.4))
 	var rubber := Color(0.95, 0.95, 1.0).lerp(Color(1.0, 0.85, 0.4), flash)
-	draw_line(edge_a, edge_b, rubber, 4.0)
+	draw_line(edge_a, edge_b, rubber, 2.0)

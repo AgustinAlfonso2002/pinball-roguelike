@@ -17,6 +17,13 @@ func _init() -> void:
 	_panel.offset_right = -12.0
 	_panel.offset_top = 12.0
 	_panel.offset_bottom = -12.0
+	_panel.visible = false  # Tab / Share para mostrarlo (solo en desarrollo).
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Color(0.06, 0.065, 0.1, 0.97)
+	bg.border_color = Color(0.3, 0.33, 0.5)
+	bg.set_border_width_all(1)
+	bg.set_content_margin_all(10)
+	_panel.add_theme_stylebox_override("panel", bg)
 	add_child(_panel)
 
 	var scroll := ScrollContainer.new()
@@ -29,8 +36,10 @@ func _init() -> void:
 	scroll.add_child(box)
 
 	var title := Label.new()
-	title.text = "AJUSTE DE FÍSICA  (Tab para ocultar)"
-	title.add_theme_font_size_override("font_size", 16)
+	title.text = "AJUSTE DE FÍSICA  (Tab para ocultar)\nValores base: los objetos los modifican encima."
+	title.add_theme_font_size_override("font_size", 15)
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	title.custom_minimum_size = Vector2(320, 0)
 	box.add_child(title)
 
 	for key in Tuning.PARAMS:

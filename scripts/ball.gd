@@ -9,7 +9,9 @@ extends RigidBody2D
 
 signal collided(other: Node)
 
-const RADIUS := 8.0
+const RADIUS := 8.0 * Geom.S
+
+var color := Color(0.80, 0.83, 0.92)  ## Los objetos de tipo bola pueden cambiarlo.
 
 var _material := PhysicsMaterial.new()
 
@@ -41,14 +43,14 @@ func _ready() -> void:
 
 
 func _apply_tuning() -> void:
-	_material.bounce = Tuning.v("ball_bounce")
-	_material.friction = Tuning.v("ball_friction")
+	_material.bounce = Run.stat(&"ball_bounce")
+	_material.friction = Run.stat(&"ball_friction")
 
 
 func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 	var vel := state.linear_velocity
-	vel.y += Tuning.v("gravity") * state.step
-	var max_speed := Tuning.v("max_ball_speed")
+	vel.y += Run.stat(&"gravity") * state.step
+	var max_speed := Run.stat(&"max_ball_speed")
 	if vel.length() > max_speed:
 		vel = vel.normalized() * max_speed
 	state.linear_velocity = vel
@@ -61,6 +63,5 @@ func _process(_delta: float) -> void:
 func _draw() -> void:
 	# El brillo no gira con la bola.
 	draw_set_transform(Vector2.ZERO, -rotation)
-	draw_circle(Vector2.ZERO, RADIUS, Color(0.80, 0.83, 0.92))
-	draw_circle(Vector2(-2.5, -2.5), 3.0, Color(1, 1, 1, 0.9))
-	draw_arc(Vector2.ZERO, RADIUS, 0.0, TAU, 24, Color(0.35, 0.38, 0.5), 1.0)
+	draw_circle(Vector2.ZERO, RADIUS, color)
+	draw_circle(Vector2(-1.2, -1.2), 1.3, Color(1, 1, 1, 0.9))

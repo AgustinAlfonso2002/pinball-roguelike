@@ -5,7 +5,7 @@ extends StaticBody2D
 
 signal dropped
 
-const SIZE := Vector2(24.0, 8.0)
+const SIZE := Vector2(24.0, 8.0) * Geom.S
 const POINTS := 250
 
 var is_down := false

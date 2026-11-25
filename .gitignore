@@ -6,3 +6,5 @@
 *.pck
 *.zip
 *.tmp
+tools/preview_*.png
+Claude outputs/

@@ -7,14 +7,17 @@ extends AnimatableBody2D
 
 signal swung(up: bool)
 
-const LENGTH := 62.0
-const BASE_RADIUS := 10.0
-const TIP_RADIUS := 5.0
+const LENGTH := 62.0 * Geom.S
+const BASE_RADIUS := 10.0 * Geom.S
+const TIP_RADIUS := 5.0 * Geom.S
 const SWING_DEG := 30.0
 
 var is_left := true
 var action := ""
 var enabled := true
+var jammed := false  ## Trabado por un sabotaje.
+var robot_driven := false  ## Lo maneja TableRobot en lugar del jugador.
+var robot_hold := false
 var rest_angle := 0.0
 var active_angle := 0.0
 
@@ -46,12 +49,14 @@ func _ready() -> void:
 
 
 func _apply_tuning() -> void:
-	_material.bounce = Tuning.v("flipper_bounce")
+	_material.bounce = Run.stat(&"flipper_bounce")
 	_material.friction = 0.3
 
 
 func is_up() -> bool:
-	return enabled and Input.is_action_pressed(action)
+	if robot_driven:
+		return enabled and not jammed and robot_hold
+	return enabled and not jammed and Input.is_action_pressed(action)
 
 
 ## True mientras el flipper está subiendo (golpeando).
@@ -65,7 +70,7 @@ func _physics_process(delta: float) -> void:
 		_was_up = pressed
 		swung.emit(pressed)
 	var target := active_angle if pressed else rest_angle
-	var speed := Tuning.v("flipper_up_speed") if pressed else Tuning.v("flipper_down_speed")
+	var speed := Run.stat(&"flipper_up_speed") if pressed else Run.stat(&"flipper_down_speed")
 	rotation = move_toward(rotation, target, speed * delta)
 
 
@@ -87,9 +92,10 @@ func _process(_delta: float) -> void:
 
 
 func _draw() -> void:
-	var col := Color(0.55, 0.79, 0.90) if enabled else Color(0.4, 0.4, 0.45)
+	var col := Color(0.55, 0.79, 0.90)
+	if not enabled:
+		col = Color(0.4, 0.4, 0.45)
+	elif jammed:
+		col = Color(0.9, 0.35, 0.3)
 	draw_colored_polygon(_outline, col)
-	var closed := _outline.duplicate()
-	closed.append(_outline[0])
-	draw_polyline(closed, Color(0.2, 0.35, 0.45), 1.5)
-	draw_circle(Vector2.ZERO, 3.0, Color(0.15, 0.2, 0.3))
+	draw_circle(Vector2.ZERO, 1.5, Color(0.15, 0.2, 0.3))
