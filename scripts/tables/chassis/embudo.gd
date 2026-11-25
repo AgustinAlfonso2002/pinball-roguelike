@@ -13,6 +13,9 @@ func _init() -> void:
 		{"pos": Vector2(74, 96), "size": "S"},  # 2 arriba izquierda
 		{"pos": Vector2(294, 96), "size": "S"},  # 3 arriba derecha
 		{"pos": Vector2(184, 362), "size": "S", "tags": ["low"]},  # 4 abajo
+		{"pos": Vector2(184, -10), "size": "M", "tags": ["top"]},  # cúpula centro
+		{"pos": Vector2(100, 30), "size": "S", "tags": ["top"]},  # cúpula izquierda
+		{"pos": Vector2(290, 30), "size": "S", "tags": ["top"]},  # cúpula derecha
 	]
 	rail_exits = [
 		{"pos": Vector2(36, 420), "dir": Vector2(0.15, 1)},

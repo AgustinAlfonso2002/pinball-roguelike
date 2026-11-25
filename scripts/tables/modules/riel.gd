@@ -1,8 +1,8 @@
 extends TableModule
 ## Riel guiado: si la bola entra a la boca yendo hacia arriba, sube al riel
-## (elevado, por encima de las otras piezas), lo recorre acelerando y sale
-## por uno de los carriles de arriba de los flippers. Recompensa los tiros
-## apuntados: es la "rampa" de esta mesa.
+## (elevado), lo recorre acelerando y sale por uno de los carriles de arriba
+## de los flippers. Recompensa los tiros apuntados: es la "rampa" de esta mesa.
+## El recorrido lo planea RailPlanner para no tapar otras piezas.
 
 const MOUTH := Vector2(34, 16)
 const POINTS := 500.0
@@ -42,20 +42,18 @@ func build() -> void:
 	_area.position = mouth
 	_area.body_entered.connect(_on_enter)
 	add_child(_area)
-	# Salida: el carril de arriba de los flippers más lejano a la boca (viaje más largo).
-	var best: Dictionary = chassis.rail_exits[0]
-	for e in chassis.rail_exits:
-		if absf(e.pos.x * Geom.S - mouth.x) > absf(best.pos.x * Geom.S - mouth.x):
-			best = e
-	var exit: Vector2 = best.pos * Geom.S
-	_exit_dir = (best.dir as Vector2).normalized()
-	# Recorrido: sube derecho desde la boca, da una curva alta y baja hasta la salida.
-	var top_y := minf(mouth.y - u(90), u(110))
-	var side := signf(exit.x - mouth.x)
-	_curve.add_point(mouth, Vector2.ZERO, Vector2(0, -u(70)))
-	_curve.add_point(Vector2(lerpf(mouth.x, exit.x, 0.5), top_y), Vector2(-side * u(80), 0), Vector2(side * u(80), 0))
-	_curve.add_point(exit, -_exit_dir * u(120), Vector2.ZERO)
-	_curve.bake_interval = 2.0
+	# Recorrido: lo planea el generador para no pasar por encima de otras piezas.
+	var path: Array = params.get("path", [])
+	if path.is_empty():
+		for p in table.layout.placements:
+			if p.module == id:
+				var socket: int = p.sockets[0]
+				path = RailPlanner.plan(chassis, socket, table.layout.occupied_rects(chassis, p), rng)
+	if path.is_empty():
+		path = [mouth / Geom.S, mouth / Geom.S + Vector2(0, -60), Vector2(36, 360), Vector2(36, 420)]
+	_curve = RailPlanner.curve(path, Geom.S)
+	var n := _curve.point_count
+	_exit_dir = (_curve.get_point_position(n - 1) - _curve.sample_baked(_curve.get_baked_length() - 8.0)).normalized()
 	_baked = _curve.get_baked_points()
 	_length = _curve.get_baked_length()
 

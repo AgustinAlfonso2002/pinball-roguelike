@@ -7,12 +7,24 @@ extends RefCounted
 var seed := 0
 var night := 1
 var chassis_id: StringName = &"clasica"
-## Cada pieza: {"module": id, "sockets": [índices de encastre]}
+## Cada pieza: {"module": id, "sockets": [índices de encastre], "params": {...}}
+## params: datos que calcula el generador (por ejemplo, el recorrido del riel).
 var placements: Array = []
 
 
-func add(module_id: StringName, sockets: Array) -> void:
-	placements.append({"module": module_id, "sockets": sockets})
+func add(module_id: StringName, sockets: Array, params := {}) -> void:
+	placements.append({"module": module_id, "sockets": sockets, "params": params})
+
+
+## Rectángulos (en unidades de diseño) ocupados por las piezas, salvo `except`.
+func occupied_rects(ch: Chassis, except: Dictionary = {}) -> Array[Rect2]:
+	var out: Array[Rect2] = []
+	for p in placements:
+		if p == except:
+			continue
+		for i in p.sockets:
+			out.append(ch.socket_rect_units(i))
+	return out
 
 
 func has_module(module_id: StringName) -> bool:

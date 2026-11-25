@@ -15,6 +15,7 @@ var weight := 1.0  ## Probabilidad relativa de aparecer.
 var min_night := 1  ## Desde qué noche puede aparecer.
 var core := false  ## Pieza central (bumpers): toda mesa tiene una en el encastre grande.
 var allow_low := false  ## Puede ir en encastres "low" (cerca de los flippers).
+var only_tags: Array = []  ## Si no está vacío, solo va en encastres con alguno de estos tags.
 ## Eventos que emite para los objetivos: tag -> {"text": "...", "goal": n, "big": bool}
 ## "goal" es la meta base de un objetivo de contar; "big" marca hazañas.
 var events := {}
@@ -22,6 +23,7 @@ var events := {}
 var table: PinballTable
 var chassis: Chassis
 var rects: Array[Rect2] = []  ## Encastres asignados, en píxeles de la mesa.
+var params := {}  ## Datos que calculó el generador para esta pieza.
 var rng := RandomNumberGenerator.new()
 
 

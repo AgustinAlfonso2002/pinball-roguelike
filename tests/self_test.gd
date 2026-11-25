@@ -661,14 +661,30 @@ func _test_generator() -> void:
 					problems.append("%s no entra en %s" % [p.module, ch.socket_size(sk)])
 				if ch.socket_has_tag(sk, "low") and not m.allow_low:
 					problems.append("%s en encastre bajo" % p.module)
+				if not m.only_tags.is_empty() and not m.only_tags.any(func(tg: String) -> bool: return ch.socket_has_tag(sk, tg)):
+					problems.append("%s fuera de su zona" % p.module)
+			if p.module == &"riel":
+				var path: Array = p.params.get("path", [])
+				if path.is_empty():
+					problems.append("riel sin recorrido")
+				else:
+					var others := l.occupied_rects(ch, p)
+					for pt in RailPlanner.curve(path).get_baked_points():
+						for r in others:
+							if r.grow(RailPlanner.HALF_WIDTH).has_point(pt):
+								problems.append("el riel pasa sobre otra pieza (%s)" % l.describe())
+								break
 		var ids := l.placements.map(func(p: Dictionary) -> StringName: return p.module)
 		for id in ids:
 			if ids.count(id) > 1:
 				problems.append("%s repetido" % id)
 		if not has_core:
 			problems.append("mesa sin bumpers (%s)" % l.describe())
-		var expected := mini(ch.sockets.size(), 2 + ceili(night / 2.0))
-		if l.placements.size() < mini(3, expected) or l.placements.size() > expected:
+		var expected := mini(ch.sockets.size(), TableGenerator.wanted_pieces(night))
+		var sockets_used := 0
+		for p in l.placements:
+			sockets_used += p.sockets.size()
+		if sockets_used < expected - 2 or l.placements.size() > expected or sockets_used > ch.sockets.size():
 			problems.append("noche %d con %d piezas" % [night, l.placements.size()])
 	_check("Generador: 300 mesas respetan las reglas", problems.is_empty(), "%d problemas %s" % [problems.size(), problems.slice(0, 3)])
 	_check("Generador: aparecen todos los chasis y módulos",
@@ -837,7 +853,28 @@ func _test_modules() -> void:
 	# Altillo: tercer flipper con el botón derecho.
 	t = _custom_table(&"altillo", [[&"trio_bumpers", [0]]])
 	await _frames(2)
-	_check("Altillo: tiene un tercer flipper", t.flippers.size() == 3 and not t.flippers[2].is_left, "%d flippers" % t.flippers.size())
+	var rest := t.flippers[2].rotation
+	Input.action_press("flipper_right")
+	await _frames(30)
+	var moved := absf(t.flippers[2].rotation - rest) > 0.3 and absf(t.flippers[1].rotation - t.flippers[1].rest_angle) > 0.3
+	Input.action_release("flipper_right")
+	await _frames(30)
+	_check("Altillo: el tercer flipper se mueve con el botón derecho, junto al flipper derecho",
+			t.flippers.size() == 3 and not t.flippers[2].is_left and moved, "%d flippers, se movió %s" % [t.flippers.size(), moved])
+
+	# Carriles de luz: los flippers corren las luces; los tres encendidos dan bonus.
+	events.clear()
+	t = _custom_table(&"clasica", [[&"trio_bumpers", [1]], [&"carriles_luz", [5]]])
+	t.module_event.connect(func(tag: StringName, _p: Vector2, _m: TableModule) -> void: events.append(tag))
+	await _frames(2)
+	var lm := _module_of(t, &"carriles_luz")
+	lm._on_lane(Ball.new(), 0)
+	t.flipper_swung.emit(false, true)  # derecho: corre las luces a la derecha
+	var shifted: bool = lm._lit == [false, true, false]
+	lm._on_lane(Ball.new(), 0)
+	lm._on_lane(Ball.new(), 2)
+	_check("Carriles de luz: los flippers corren las luces y los 3 encendidos dan bonus", shifted and &"lanes_done" in events,
+			"luces %s, eventos %s" % [lm._lit, events])
 	main.start_sandbox()
 	await _frames(5)
 

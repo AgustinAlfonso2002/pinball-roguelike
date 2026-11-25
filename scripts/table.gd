@@ -217,6 +217,7 @@ func _build_modules() -> void:
 			continue
 		m.table = self
 		m.chassis = chassis
+		m.params = p.get("params", {})
 		for i in p.sockets:
 			m.rects.append(chassis.socket_rect(i))
 		m.rng.seed = hash([layout.seed, p.module, p.sockets])
@@ -241,8 +242,9 @@ func add_flipper(pivot_units: Vector2, left: bool) -> Flipper:
 
 
 ## Agrega un bumper (los módulos lo usan; queda en `bumpers`).
-func add_bumper(pos: Vector2) -> Bumper:
+func add_bumper(pos: Vector2, radius := Bumper.RADIUS) -> Bumper:
 	var b := Bumper.new()
+	b.radius = radius
 	b.position = pos
 	add_child(b)
 	bumpers.append(b)

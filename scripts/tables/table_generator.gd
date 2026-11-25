@@ -6,8 +6,10 @@ class_name TableGenerator
 ##   - El encastre grande (L) siempre lleva una pieza central (bumpers).
 ##   - Si hay un encastre mediano (M), lleva algo que sube el multiplicador
 ##     (banco de dianas o muro de ladrillos).
-##   - Cantidad de piezas según la noche: 3 la primera, hasta llenar la mesa.
+##   - Cantidad de piezas según la noche: 4 la primera, hasta llenar la mesa.
 ##   - Cada módulo aparece una vez como máximo; los portales usan dos encastres.
+##   - El riel se dibuja por encima de la mesa: su recorrido se planea para que
+##     no pase por arriba de ninguna otra pieza. Si no hay lugar, va otra pieza.
 
 const MULT_SOURCES := [&"banco_dianas", &"ladrillos"]
 
@@ -40,7 +42,7 @@ static func generate(seed: int, night: int, force_chassis: StringName = &"") -> 
 		l.chassis_id = force_chassis
 	var ch := TableParts.chassis(l.chassis_id)
 
-	var wanted := mini(ch.sockets.size(), 2 + ceili(night / 2.0))
+	var wanted := mini(ch.sockets.size(), wanted_pieces(night))
 	var count := 0
 	var free := range(ch.sockets.size())
 
@@ -85,7 +87,7 @@ static func generate(seed: int, night: int, force_chassis: StringName = &"") -> 
 				continue
 			if not (ch.socket_size(i) in m.sizes):
 				continue
-			if ch.socket_has_tag(i, "low") and not m.allow_low:
+			if not _fits_tags(ch, i, m):
 				continue
 			if m.sockets_needed > 1 and _partner(ch, free, i, m) < 0:
 				continue
@@ -101,7 +103,48 @@ static func generate(seed: int, night: int, force_chassis: StringName = &"") -> 
 			free.erase(s)
 		l.add(pick, used)
 		count += 1
+	_plan_rail(l, ch, rng, night)
 	return l
+
+
+## Cuántas piezas lleva una mesa según la noche (4 la primera, +1 cada tanto).
+static func wanted_pieces(night: int) -> int:
+	return 3 + ceili(night * 0.75)
+
+
+static func _fits_tags(ch: Chassis, i: int, m: TableModule) -> bool:
+	if ch.socket_has_tag(i, "low") and not m.allow_low:
+		return false
+	if not m.only_tags.is_empty():
+		for t in m.only_tags:
+			if ch.socket_has_tag(i, t):
+				return true
+		return false
+	return true
+
+
+## Planea el recorrido del riel esquivando las demás piezas. Si no hay forma,
+## lo cambia por otra pieza chica que entre en ese encastre.
+static func _plan_rail(l: TableLayout, ch: Chassis, rng: RandomNumberGenerator, night: int) -> void:
+	for p in l.placements:
+		if p.module != &"riel":
+			continue
+		var path := RailPlanner.plan(ch, p.sockets[0], l.occupied_rects(ch, p), rng)
+		if not path.is_empty():
+			p.params = {"path": path}
+			return
+		l.placements.erase(p)
+		var socket: int = p.sockets[0]
+		var opts := []
+		for id in TableParts.module_ids():
+			var m := TableParts.module_proto(id)
+			if id == &"riel" or m.core or l.has_module(id) or m.min_night > night or m.sockets_needed > 1:
+				continue
+			if ch.socket_size(socket) in m.sizes and _fits_tags(ch, socket, m):
+				opts.append([id, m.weight])
+		if not opts.is_empty():
+			l.add(_pick(opts, rng), [socket])
+		return
 
 
 ## Otro encastre libre compatible (para piezas de dos encastres), el más lejano.
@@ -111,7 +154,7 @@ static func _partner(ch: Chassis, free: Array, first: int, m: TableModule) -> in
 	for j in free:
 		if j == first or not (ch.socket_size(j) in m.sizes):
 			continue
-		if ch.socket_has_tag(j, "low") and not m.allow_low:
+		if not _fits_tags(ch, j, m):
 			continue
 		var d: float = (ch.sockets[j].pos as Vector2).distance_to(ch.sockets[first].pos)
 		if d > best_d:

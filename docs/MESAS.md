@@ -20,11 +20,23 @@ Mesa = chasis (forma + encastres) + módulos (piezas en los encastres)
 2. El encastre grande (L) lleva una pieza central (`core = true`: bumpers).
 3. Si hay un encastre mediano (M), lleva algo que sube el multiplicador
    (banco de dianas o muro de ladrillos).
-4. Llena el resto al azar hasta `2 + noche/2` piezas (redondeado para arriba):
-   3 la primera noche, la mesa llena hacia el final.
+4. Llena el resto al azar hasta `3 + noche × 0,75` piezas (redondeado para
+   arriba): 4 la primera noche, la mesa llena hacia el final.
 5. Cada módulo aparece una vez como máximo; los portales usan dos encastres;
    en los encastres `low` (cerca de los flippers) solo van módulos con
-   `allow_low = true`.
+   `allow_low = true`; los módulos con `only_tags` (por ejemplo los carriles
+   de luz, `["top"]`) solo van en encastres con ese tag.
+6. El riel se dibuja por encima de la mesa, así que `RailPlanner` le planea un
+   recorrido que no pase sobre ninguna otra pieza: un arco directo, o por las
+   paredes y el borde de la cúpula. Si no hay recorrido posible, en ese
+   encastre va otra pieza.
+
+Cada chasis tiene 3 encastres en la **cúpula** de arriba (tag `top`): uno
+mediano al centro y dos chicos a los costados, lejos del borde para no tapar
+el recorrido de la bola lanzada.
+
+**Flippers extra:** se mueven con el botón de su lado (`add_flipper(pos, false)`
+= botón derecho, junto con el flipper derecho de abajo).
 
 ## Agregar un chasis
 
@@ -42,6 +54,7 @@ func _init() -> void:
 		{"pos": Vector2(185, 250), "size": "L"},          # 150 × 150 (uno por mesa)
 		{"pos": Vector2(62, 150), "size": "S"},           # 64 × 64
 		{"pos": Vector2(184, 362), "size": "S", "tags": ["low"]},
+		{"pos": Vector2(184, -10), "size": "M", "tags": ["top"]},  # cúpula (y < 0)
 	]
 	rail_exits = [  # por dónde sale la bola del riel guiado
 		{"pos": Vector2(36, 420), "dir": Vector2(0.15, 1)},
@@ -105,6 +118,10 @@ una pared.
 | Portales | S + S | Entra por uno, sale por el otro con la misma velocidad. |
 | Catapulta | S, M | Atrapa la bola y la lanza por el aire (con sombra); al aterrizar, una onda golpea lo que esté cerca. |
 | Vórtice | S, M | Chupa la bola en espiral y la escupe hacia arriba en una dirección al azar. |
+| Carriles de luz | M (solo cúpula) | Tres carriles que se encienden al pasar; los flippers corren las luces; los tres encendidos dan bonus. |
+| Molinete | S | Paleta que la bola atraviesa y hace girar; cada media vuelta suma. |
+| Mini bumpers | S | Dos bumpers chicos que hacen rebotar la bola entre ellos. |
+| Barrera móvil | M | Barra que va y viene; tres golpes seguidos la aceleran y duplican sus puntos. |
 
 ## Objetivos secundarios (`table_objective.gd`)
 

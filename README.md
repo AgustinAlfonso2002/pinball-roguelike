@@ -104,7 +104,7 @@ Cada objeto es un archivo en `scripts/items/catalog/` y cada rival, uno en `scri
 
 ## Mesas
 
-Cada mesa = un **chasis** (forma de la parte de arriba, paredes, flippers extra y encastres) + **módulos** en los encastres. La parte de abajo (flippers, slingshots, carriles, lanzador) es igual en todas. Hoy hay 3 chasis (Clásica, Embudo, Altillo con tercer flipper) y 8 módulos (trío de bumpers, bumpers en órbita, banco de dianas, muro de ladrillos, riel guiado, portales, catapulta y vórtice). Agregar uno = agregar un archivo. **Guía, reglas del generador y robot de prueba: [docs/MESAS.md](docs/MESAS.md).**
+Cada mesa = un **chasis** (forma de la parte de arriba, paredes, flippers extra y encastres) + **módulos** en los encastres. La parte de abajo (flippers, slingshots, carriles, lanzador) es igual en todas. Hoy hay 3 chasis (Clásica, Embudo, Altillo con tercer flipper), cada uno con encastres también en la cúpula de arriba, y 12 módulos (trío de bumpers, bumpers en órbita, mini bumpers, banco de dianas, muro de ladrillos, carriles de luz, barrera móvil, molinete, riel guiado, portales, catapulta y vórtice). Los flippers extra se mueven con el botón de su lado. Agregar uno = agregar un archivo. **Guía, reglas del generador y robot de prueba: [docs/MESAS.md](docs/MESAS.md).**
 
 Para probar: panel **F2** → "Mesa al azar" (podés elegir el chasis) y "Robot juega". Prueba masiva:
 
@@ -164,7 +164,7 @@ docs/MESAS.md               Guía de mesas: chasis, módulos, objetivos y robot
 
 ## Autoprueba
 
-58 pruebas de física (flippers, bumpers, lanzador, paredes, outlanes, dianas), de juego (catálogo, puntaje, estadísticas, tienda, partidas, duelos, consumibles), de mesas generadas (reglas del generador, cada módulo, objetivos y el robot jugando 3 mesas) y de guardado, menús y tamaños de fuente:
+59 pruebas de física (flippers, bumpers, lanzador, paredes, outlanes, dianas), de juego (catálogo, puntaje, estadísticas, tienda, partidas, duelos, consumibles), de mesas generadas (reglas del generador, cada módulo, objetivos y el robot jugando 3 mesas) y de guardado, menús y tamaños de fuente:
 
 ```
 godot --headless --path . --fixed-fps 60 -- --selftest

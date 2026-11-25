@@ -15,7 +15,8 @@ var display_name := ""
 var weight := 1.0
 var min_night := 1
 ## Encastres: {"pos": centro, "size": "S"/"M"/"L", "tags": [...]}.
-## Tags: "low" = cerca de los flippers (solo piezas que no tapan el paso).
+## Tags: "low" = cerca de los flippers (solo piezas que no tapan el paso);
+##       "top" = en la cúpula de arriba.
 var sockets: Array = []
 ## Salidas del riel guiado: {"pos", "dir"}. La bola sale ahí con esa dirección.
 var rail_exits: Array = []
@@ -28,9 +29,15 @@ func build(_table: PinballTable) -> void:
 
 ## Rectángulo del encastre en píxeles de la mesa.
 func socket_rect(index: int) -> Rect2:
+	var r := socket_rect_units(index)
+	return Rect2(r.position * Geom.S, r.size * Geom.S)
+
+
+## Rectángulo del encastre en unidades de diseño.
+func socket_rect_units(index: int) -> Rect2:
 	var s: Dictionary = sockets[index]
 	var size: Vector2 = SIZES[s.size]
-	return Rect2((s.pos - size * 0.5) * Geom.S, size * Geom.S)
+	return Rect2(s.pos - size * 0.5, size)
 
 
 func socket_size(index: int) -> String:
